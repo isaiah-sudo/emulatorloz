@@ -332,5 +332,19 @@
     "VSync": "VSync",
     "Video Rotation": "Video Rotation",
     "Rewind Enabled (Requires restart)": "Rewind Enabled (Requires restart)",
-    "System Save interval": "System Save interval"
+    "System Save interval": "System Save interval",
+    "Exit Emulation": "Exit Emulation",
+    "D-PAD UP": "D-PAD UP",
+    "D-PAD DOWN": "D-PAD DOWN",
+    "D-PAD LEFT": "D-PAD LEFT",
+    "D-PAD RIGHT": "D-PAD RIGHT",
+    "LEFT_BOTTOM_SHOULDER": "LEFT_BOTTOM_SHOULDER",
+    "-1": "-1",
+    "+1": "+1",
+    "": "",
+    "CU": "CU",
+    "CD": "CD",
+    "CL": "CL",
+    "CR": "CR",
+    "Core (Requires restart)": "Core (Requires restart)"
 }

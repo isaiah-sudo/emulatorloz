@@ -95,21 +95,11 @@
                 margin: 5px;
             }
         </style>
-    </head>
-
-    <body>
-        <div id="top">
-            <h1>EmulatorJS Demo</h1>
-            <img src="docs/Logo-light.png" alt="Logo" class="logo">
-            <br>
-        </div>
-        <div id="box">
-            <input type = file id = input>
-            Drag ROM file or click here
-        </div>
-
         <script>
-            let enableDebug = false;
+            window.onerror = function(message, source, lineno, colno, error) {
+                console.error("An error occurred:", message, "from", source, "at line", lineno, "column", colno, "Error object:", error);
+                return true; // Prevent the default browser error handling
+            };
             let enableThreads = false;
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
@@ -138,10 +128,14 @@
             }
 
             async function run(upload, file) {
+                const input = document.getElementById('input');
+                const box = document.getElementById('box');
+                console.log("run function called"); // Log at the beginning of the function
                 const url = upload ? input.files[0] : "roms/" + file;
                 const parts = upload ? input.files[0].name.split(".") : file.split(".");
 
-                const core = await (async (ext) => {
+                console.log("Determining core for file:", upload ? input.files[0].name : file); // Log before core determination
+                const core = await (async (ext) => { // Log after core determination
                     if (["fds", "nes", "unif", "unf"].includes(ext))
                         return "nes"
 
@@ -169,6 +163,7 @@
                     if (["nds", "gba", "gb", "z64", "n64"].includes(ext))
                         return ext
 
+                    console.log("Extension not in direct mapping, prompting user for core."); // Log when prompting for core
                     return await new Promise(resolve => {
                         var coreValues = {
                             "Nintendo 64": "n64",
@@ -204,9 +199,9 @@
 
                         const cores = Object.keys(coreValues).sort().reduce(
                             (obj, key) => { 
-                                obj[key] = coreValues[key]; 
+                                obj[key] = coreValues[key];
                                 return obj;
-                            }, 
+                            },
                             {}
                         );
 
@@ -228,42 +223,65 @@
                         box.appendChild(select)
                         box.appendChild(button)
                     })
-                })(parts.pop())
+                })(parts.pop());
 
-                const div = document.createElement("div")
+                console.log("Core determined:", core);
+                const div = document.createElement("div");
                 const sub = document.createElement("div")
                 const script = document.createElement("script")
 
                 sub.id = "game"
                 div.id = "display"
 
-                const top = document.getElementById("top");
+                const top = document.getElementById("top"); // This will now find the element in the body
                 top.remove();
                 box.remove()
                 div.appendChild(sub)
                 document.body.appendChild(div)
 
-                window.EJS_player = "#game";
-                window.EJS_gameName = parts.shift();
-                window.EJS_biosUrl = "";
-                window.EJS_gameUrl = url;
-                window.EJS_core = core;
-                window.EJS_pathtodata = "data/";
-                window.EJS_startOnLoaded = true;
-                window.EJS_DEBUG_XX = enableDebug;
-                window.EJS_disableDatabases = true;
-                window.EJS_threads = enableThreads;
+                console.log("DOM elements created and appended."); // Log after DOM manipulation
 
-                script.src = "data/loader.js";
-                document.body.appendChild(script);
+                console.log("Before checkEJS interval"); // Added log
+
+                const checkEJS = setInterval(() => {
+                    console.log("Inside checkEJS interval"); // Added log
+                    if (window.EJS_Runtime) {
+                        clearInterval(checkEJS);
+                        console.log("EJS_Runtime detected, loading loaderScript."); // Log when EJS_Runtime is detected
+                        const loaderScript = document.createElement("script");
+                        loaderScript.src = "data/loader.js";
+                        document.body.appendChild(loaderScript);
+                        console.log("loaderScript appended."); // Log after appending loaderScript
+                    }
+ else { // Added else block for logging
+                        console.log("Waiting for EJS_Runtime..."); // Added log
+                    }
+                }, 100); // Poll every 100ms
             }
-            
-            input.onchange = async () => {
-                run(true);
-            }
-            
-            box.ondragover = () => box.setAttribute("drag", true);
-            box.ondragleave = () => box.removeAttribute("drag");
+            document.addEventListener('DOMContentLoaded', (event) => {
+                const input = document.getElementById('input');
+                const box = document.getElementById('box');
+                input.onchange = async () => {
+                    console.log("input.onchange triggered"); // Log when file input changes
+                    run(true);
+                }
+                box.ondragover = () => box.setAttribute("drag", true);
+                box.ondragleave = () => box.removeAttribute("drag");
+            });
         </script>
+    </head>
+
+
+    <body>
+        <script src="data/emulator.min.js"></script>
+        <div id="top">
+            <h1>EmulatorJS Demo</h1>
+            <img src="docs/Logo-light.png" alt="Logo" class="logo">
+            <br>
+        </div>
+        <div id="box">
+            <input type = file id = input>
+            Drag ROM file or click here
+        </div>
     </body>
 </html>
